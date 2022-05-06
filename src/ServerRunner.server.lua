@@ -1,0 +1,1 @@
+require(script.Parent.RunLSC_Plugin)(plugin)
