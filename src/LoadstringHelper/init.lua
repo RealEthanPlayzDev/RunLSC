@@ -24,7 +24,7 @@ return function(src: string, chunkname: string?, env: {[string]: any}?): ((...an
     else
         --// Environment preparation
         if typeof(env) ~= "table" then
-            env = getfenv(2)
+            env = getfenv(1)
             env.script = nil
         end
 
