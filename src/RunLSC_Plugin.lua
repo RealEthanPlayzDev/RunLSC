@@ -1,3 +1,11 @@
+--[[
+File name: RunLSC_Plugin.lua
+Author: RadiatedExodus (ItzEthanPlayz_YT/RealEthanPlayzDev)
+Created at: May 6, 2022
+
+The core RunLSC code for setting up the plugin toolbars, buttons, etc
+--]]
+
 --// Services
 local serv = {
     Selection = game:GetService("Selection");
