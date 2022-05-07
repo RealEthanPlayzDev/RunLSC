@@ -39,6 +39,7 @@ return function(plugin: Plugin)
                 end
             end)
         end
-        RunBtn:SetActive(false)
+        RunBtn.Enabled = false
+        RunBtn.Enabled = true
     end)
 end
