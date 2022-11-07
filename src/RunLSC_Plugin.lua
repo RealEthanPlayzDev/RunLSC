@@ -31,11 +31,11 @@ return function(plugin: Plugin)
         for _, selection in pairs(serv.Selection:Get()) do
             if not selection:IsA("LuaSourceContainer") or selection:IsA("CoreScript") then continue end
             task.spawn(function()
-                local env = getfenv(1)
-                env.script = selection
-                local success, result = pcall(loadstring(selection.Source, selection:GetFullName(), env))
-                if not success then
-                    task.spawn(error, result)
+                local Environment = getfenv(1)
+                Environment["script"] = selection
+                local Success, Result = pcall(loadstring(selection.Source, selection:GetFullName(), Environment))
+                if not Success then
+                    task.spawn(error, string.format("%s:%s", selection:GetFullName(), Result))
                 end
             end)
         end
