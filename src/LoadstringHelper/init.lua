@@ -24,8 +24,10 @@ return function(src: string, chunkname: string?, env: {[string]: any}?): ((...an
     else
         --// Environment preparation
         if typeof(env) ~= "table" then
-            env = getfenv(1)
-            env.script = nil
+            --// Have to do it like this to bypass a type error about env being nil instead of a table
+            local _env = getfenv(1)
+            _env["script"] = nil
+            env = _env
         end
 
         --// Compiling

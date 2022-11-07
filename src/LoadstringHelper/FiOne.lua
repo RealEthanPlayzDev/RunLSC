@@ -1,3 +1,5 @@
+--!nolint
+--!nocheck
 ---@diagnostic disable: undefined-global
 --# selene: allow(divide_by_zero)
 --[[
