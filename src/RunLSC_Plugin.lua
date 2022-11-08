@@ -14,7 +14,7 @@ local serv = {
 }
 
 --// Libraries
-local loadstring = require(script.Parent.LoadstringHelper)
+local loadstring = require(script.Parent.lib.LoadstringHelper)
 
 return function(plugin: Plugin)
     --// Toolbar and buttons
