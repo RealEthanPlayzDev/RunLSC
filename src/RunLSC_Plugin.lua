@@ -17,10 +17,6 @@ local serv = {
 local loadstring = require(script.Parent.LoadstringHelper)
 
 return function(plugin: Plugin)
-    --// Preventing the script from running more than a single time
-    if script:GetAttribute("Ran") then return end
-    script:SetAttribute("Ran", true)
-
     --// Toolbar and buttons
     local Toolbar = plugin:CreateToolbar("RunLSC")
     local RunBtn = Toolbar:CreateButton(if serv.RunService:IsEdit() then "Run" else if serv.RunService:IsServer() then "Run (server)" else "Run (client)", "Run the selected LuaSourceContainer(s)", "rbxassetid://4458901886")
