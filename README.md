@@ -14,11 +14,15 @@ This is a simple Roblox Studio plugin for running LuaSourceContainer(s) (excludi
 ## Credits
 - [FiOne](https://github.com/Rerumu/FiOne) - Fall-back interpreter if Roblox's provided ``loadstring()`` is not available
 - [Yueliang](https://web.archive.org/web/20201126191223/http://yueliang.luaforge.net/) - Fall-back bytecode compiler if Roblox's provided ``loadstring()`` is not available
-- [Lucide](https://lucide.dev/)
-- [Icon Picker Plugin](https://gitlab.com/koterahq/luciderblx/plugin)
+- [Lucide](https://lucide.dev/) - Icon assets
+- [Icon Picker Plugin](https://gitlab.com/koterahq/luciderblx/plugin) - The picker for Lucide's icons
+- [Codify](https://github.com/csqrl/codify-plugin) - Turning the guis I've made into Luau code
+- [Highlighter](https://github.com/boatbomber/highlighter) - Syntax highlighting
 
 ## Acknowledgements
 - Rerumu
 - Authors of Yueliang
 - Lucide community and contributors
 - 7kayoh
+- csqrl
+- boatbomber
