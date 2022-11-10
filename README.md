@@ -1,6 +1,13 @@
 # RunLuaSourceContainer (shortened, RunLSC)
 This is a simple Roblox Studio plugin for running LuaSourceContainer(s) (excluding CoreScript instances), I wrote this because I could not find a feature where you can select multiple scripts and click a button to simulate running them.
 
+## Building a rbxm plugin file
+You must have [Rojo](https://rojo.space/) v7.x.x (tested: v7.2.1) installed and added to your path.
+Run the following command:
+```
+rojo build default.project.json --output RunLSC.rbxm
+```
+
 ## Limitations
 - ~~If loadstring is not available, then it will fall back to using Yueliang + FiOne for code execution, otherwise it will use Roblox’s provided loadstring.~~ No longer applicable if using any version newer than 1.2
 
