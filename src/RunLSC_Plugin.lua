@@ -252,11 +252,12 @@ return function(plugin: Plugin)
         Enum.InitialDockState.Left,
         false,
         false,
-        100,
-        100,
-        200,
+        0,
+        0,
+        250,
         100
     ))
+    SettingsWidget.Name = "RunLSC_Settings"
     SettingsWidget.Title = "RunLSC - Settings"
 
     --// Settings button setup
