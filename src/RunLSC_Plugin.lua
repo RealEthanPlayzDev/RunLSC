@@ -23,6 +23,7 @@ local serv = {
 
 --// Libraries
 local loadstring = require(script.Parent.lib.LoadstringHelper)
+local SettingsManager = require(script.Parent.lib.SettingsManager)
 
 --// Replace stdout functions with a wrapped one (except error)
 local function _print(...)
@@ -116,12 +117,15 @@ return function(plugin: Plugin)
 		AddToDebris(SHARED_INTERNAL_FOLDER_LOCATION:FindFirstChild(SHARED_INTERNAL_FOLDER_NAME))
 	end
 
+    --// SettingsManager
+    local PluginSettings = SettingsManager.new(plugin)
+
     --// Toolbar creation
     local Toolbar = plugin:CreateToolbar("RunLSC")
 
     if serv.RunService:IsEdit() then
         --// Run button setup
-        local RunBtn = Toolbar:CreateButton("Run", "Run the selected LuaSourceContainer(s)", "rbxassetid://4458901886")
+        local RunBtn = Toolbar:CreateButton("Run", "Run the selected LuaSourceContainer(s)", "rbxassetid://10734982144")
         RunBtn.ClickableWhenViewportHidden = true
         RunBtn.Click:Connect(function()
             for _, lsc in ipairs(serv.Selection:Get()) do
@@ -202,7 +206,8 @@ return function(plugin: Plugin)
         end
 
         --// Run buttons setup
-        local RunServerBtn = Toolbar:CreateButton("Run (server)", "Run the selected LuaSourceContainer(s) at the server", "rbxassetid://4458901886")
+        local RunServerBtn = Toolbar:CreateButton("Run (server)", "Run the selected LuaSourceContainer(s) at the server", "rbxassetid://10734949856")
+        RunServerBtn.ClickableWhenViewportHidden = true
         RunServerBtn.Click:Connect(function()
             if serv.RunService:IsServer() then
                 for _, lsc in ipairs(serv.Selection:Get()) do
@@ -219,7 +224,8 @@ return function(plugin: Plugin)
             return
         end)
 
-        local RunClientBtn = Toolbar:CreateButton("Run (client)", "Run the selected LuaSourceContainer(s) at the client", "rbxassetid://4458901886")
+        local RunClientBtn = Toolbar:CreateButton("Run (client)", "Run the selected LuaSourceContainer(s) at the client", "rbxassetid://10723417797")
+        RunClientBtn.ClickableWhenViewportHidden = true
         RunClientBtn.Click:Connect(function()
             if serv.RunService:IsServer() then
                 local MSTargets = {}
@@ -240,4 +246,31 @@ return function(plugin: Plugin)
             return
         end)
     end
+
+    --// Settings widget setup
+    local SettingsWidget = plugin:CreateDockWidgetPluginGui("RunLSC - Settings", DockWidgetPluginGuiInfo.new(
+        Enum.InitialDockState.Left,
+        false,
+        false,
+        100,
+        100,
+        200,
+        100
+    ))
+    SettingsWidget.Title = "RunLSC - Settings"
+
+    --// Settings button setup
+    local SettingsBtn = Toolbar:CreateButton("Settings", "Open the RunLSC configuration window", "rbxassetid://10709810948")
+    SettingsBtn.ClickableWhenViewportHidden = true
+    SettingsBtn.Click:Connect(function()
+        SettingsWidget.Enabled = not SettingsWidget.Enabled
+        return warn("Settings widget not implemented yet")
+    end)
+
+    --// Plugin unload hook
+    plugin.Unloading:Connect(function()
+        PluginSettings:Destroy()
+    end)
+
+    return true
 end
