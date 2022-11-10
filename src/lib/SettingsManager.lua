@@ -34,9 +34,12 @@ function SettingsManager:GetLocalSettings()
     return self.Settings
 end
 
-function SettingsManager:Flush()
+function SettingsManager:Flush(silentflush: boolean?)
     if self.IsLocked then
-        return warn("["..self.StdoutIdentifier.."]: Modified settings won't be flushed as it was locked from another session")
+        if not silentflush then
+            warn("["..self.StdoutIdentifier.."]: Modified settings won't be flushed as it was locked from another session")
+        end
+        return
     end
     for key, value in pairs(self.Settings) do
         self.Plugin:SetSetting(key, value)
@@ -44,8 +47,8 @@ function SettingsManager:Flush()
     return
 end
 
-function SettingsManager:Destroy()
-    self:Flush()
+function SettingsManager:Destroy(silentflush: boolean?)
+    self:Flush(silentflush)
     self.Plugin:SetSetting(LOCK_KEY_NAME, false)
     self.Settings = nil
     self.AccessedKeys = nil

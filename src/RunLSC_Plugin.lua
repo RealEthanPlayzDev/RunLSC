@@ -391,7 +391,7 @@ return function(plugin: Plugin)
 
     --// Plugin unload hook
     plugin.Unloading:Connect(function()
-        PluginSettings:Destroy()
+        PluginSettings:Destroy(if serv.RunService:IsEdit() then false else true)
     end)
 
     return true
