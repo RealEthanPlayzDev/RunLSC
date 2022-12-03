@@ -130,6 +130,11 @@ return function(plugin: Plugin)
     --// SettingsManager
     local PluginSettings = SettingsManager.new(plugin)
 
+    --// Warn about locked settings if it is locked
+    if PluginSettings.IsLocked then
+        warn("It seems like you have another Studio session running and this isn't the first session, saving plugin settings will be disabled.\nIf this is the first Studio session, you might have to manually release the lock via settings.")
+    end
+
     --// Toolbar creation
     local Toolbar = plugin:CreateToolbar("RunLSC")
 
@@ -318,19 +323,39 @@ return function(plugin: Plugin)
                 Frame = ExecutorFrame:FindFirstChild("Editor") :: ScrollingFrame;
                 Lines = ExecutorFrame:FindFirstChild("Editor"):FindFirstChild("Lines") :: Frame;
                 TextBox = ExecutorFrame:FindFirstChild("Editor"):FindFirstChild("TextBox") :: TextBox;
-                LineMark = ExecutorFrame:FindFirstChild("Editor"):FindFirstChild("Lines"):FindFirstChild("1") :: TextLabel;
+                LineCount = ExecutorFrame:FindFirstChild("Editor"):FindFirstChild("Lines"):FindFirstChild("1") :: TextLabel;
             };
         }
-        ExecutorFrameReferences.Editor.LineMark.Parent = nil
+        ExecutorFrameReferences.Editor.LineCount.Parent = nil
     end
 
     ExecutorFrameReferences.Editor.TextBox:GetPropertyChangedSignal("Text"):Connect(function()
+        local Text = ExecutorFrameReferences.Editor.TextBox.Text
+
         --// Resize canvas automatically
-        local TextBounds = serv.TextService:GetTextSize(ExecutorFrameReferences.Editor.TextBox.Text, ExecutorFrameReferences.Editor.TextBox.TextSize, Enum.Font.Code, Vector2.new(9999,9999))
+        local TextBounds = serv.TextService:GetTextSize(Text, ExecutorFrameReferences.Editor.TextBox.TextSize, Enum.Font.Code, Vector2.new(9999,9999))
         ExecutorFrameReferences.Editor.Frame.CanvasSize = UDim2.new(0, TextBounds.X + 55, 0, TextBounds.Y + 5)
 
+        --// Line counter
+        local TotalLines = #(string.split(Text, "\n"))
+        local CountedLines = ExecutorFrameReferences.Editor.Lines:GetChildren()
+        local TotalCountedLines = #CountedLines - 1 --// Theres a UIListLayout which is not a counted line instance
+        if TotalCountedLines < TotalLines then
+            for i = TotalCountedLines, TotalLines do
+                local Count = ExecutorFrameReferences.Editor.LineCount:Clone()
+                Count.Name = i
+                Count.Text = i
+                Count.LayoutOrder = i
+                Count.Parent = ExecutorFrameReferences.Editor.Lines
+            end
+        else
+            for i = TotalLines + 1, TotalCountedLines do
+                AddToDebris(CountedLines[i], 0)
+            end
+        end
+
         --// Syntax highlighting
-        Highlighter.highlight({ textObject = ExecutorFrameReferences.Editor.TextBox, src = ExecutorFrameReferences.Editor.TextBox.Text })
+        Highlighter.highlight({ textObject = ExecutorFrameReferences.Editor.TextBox, src = Text })
     end)
 
     ExecutorFrameReferences.Frame.Parent = ExecutorWidget
