@@ -11,6 +11,7 @@ local SHARED_INTERNAL_FOLDER_LOCATION = game:GetService("ReplicatedStorage")
 local SHARED_INTERNAL_FOLDER_NAME = "RunLSC_InternalStorage"
 local SHARED_INTERNAL_FOLDER_CONNECTOR_NAME = "RunLSC_DataModelConnector"
 local SHARED_INTERNAL_FOLDER_MSCACHE_NAME = "RunLSC_ModuleScriptCache"
+local NATIVEIDE_TEMPLSC_LOCATION = game:GetService("Debris")
 local EMPTY_CLOSURE = function() return end
 
 --// Services
@@ -20,6 +21,7 @@ local serv = {
     Debris = game:GetService("Debris");
     Players = game:GetService("Players");
     TextService = game:GetService("TextService");
+    ScriptEditorService = game:GetService("ScriptEditorService");
 }
 
 --// Libraries
@@ -312,6 +314,8 @@ return function(plugin: Plugin)
     ExecutorWidget.Name = "RunLSC_Executor"
     ExecutorWidget.Title = "RunLSC - Executor"
 
+    local CurrentNativeIDELSC
+    local CurrentNativeIDELSCScriptDoc
     local ExecutorFrameReferences do
         local ExecutorFrame = UIHelper.CreateExecutorUI()
         ExecutorFrameReferences = {
@@ -360,18 +364,51 @@ return function(plugin: Plugin)
 
     ExecutorFrameReferences.Frame.Parent = ExecutorWidget
 
+    --// ScriptEditorService setup
+	serv.ScriptEditorService.TextDocumentDidClose:Connect(function(document)
+        if not CurrentNativeIDELSCScriptDoc then return end
+		if document:GetScript() == CurrentNativeIDELSCScriptDoc:GetScript() then
+			CurrentNativeIDELSCScriptDoc = nil
+			ExecutorWidget.Enabled = false
+		end
+	end)
+
     --// Executor button setup
     local ExecuteWindowToggleBtn = Toolbar:CreateButton("Executor", "Open the RunLSC code execution window", "rbxassetid://10734943448")
     ExecuteWindowToggleBtn.ClickableWhenViewportHidden = true
     ExecuteWindowToggleBtn.Click:Connect(function()
-        ExecutorWidget.Enabled = not ExecutorWidget.Enabled
+        if PluginSettings:GetSetting("UseNativeScriptIDE") then
+            if CurrentNativeIDELSCScriptDoc then return end
+			if not CurrentNativeIDELSC then
+                local TempLSC = if serv.RunService:IsServer() then Instance.new("Script") else Instance.new("LocalScript")
+                TempLSC.Name = "RunLSC - Executor IDE"
+                TempLSC.Archivable = false
+                TempLSC.Parent = NATIVEIDE_TEMPLSC_LOCATION
+                CurrentNativeIDELSC = TempLSC
+			end
+
+			local OpenSuccess, Reason = serv.ScriptEditorService:OpenScriptDocumentAsync(CurrentNativeIDELSC)
+            if not OpenSuccess then
+                return warn("Failed to open native script editor using \"ScriptEditorService:OpenScriptDocumentAsync()\":\n"..Reason)
+            end
+
+			CurrentNativeIDELSCScriptDoc = serv.ScriptEditorService:FindScriptDocument(CurrentNativeIDELSC)
+			ExecutorWidget.Enabled = true
+		else
+			ExecutorWidget.Enabled = not ExecutorWidget.Enabled
+		end
         return
     end)
 
     if serv.RunService:IsEdit() then
         ExecutorFrameReferences.Run.MouseButton1Click:Connect(function()
             local DummyScript = Instance.new("Script")
-            DummyScript.Source = ExecutorFrameReferences.Editor.TextBox.Text
+            if PluginSettings:GetSetting("UseNativeScriptIDE") then
+				if not CurrentNativeIDELSCScriptDoc then return end
+				DummyScript.Source = CurrentNativeIDELSCScriptDoc:GetText()
+			else
+				DummyScript.Source = ExecutorFrameReferences.Editor.TextBox.Text
+			end
             task.spawn(CompileAndRun, DummyScript)
         end)
 
@@ -389,12 +426,22 @@ return function(plugin: Plugin)
         ExecutorFrameReferences.RunServer.MouseButton1Click:Connect(function()
             if serv.RunService:IsServer() then
                 local DummyScript = Instance.new("Script")
-                DummyScript.Source = ExecutorFrameReferences.Editor.TextBox.Text
+				if PluginSettings:GetSetting("UseNativeScriptIDE") then
+					if not CurrentNativeIDELSCScriptDoc then return end
+					DummyScript.Source = CurrentNativeIDELSCScriptDoc:GetText()
+				else
+					DummyScript.Source = ExecutorFrameReferences.Editor.TextBox.Text
+				end
 
                 local MS = CreateModuleScriptWrappedLSC(DummyScript, true)
                 task.spawn(RunModuleScriptWrappedLSC, MS)
             else
-                DataModelConnector:FireServer("RequestSourceRunOnServer", ExecutorFrameReferences.Editor.TextBox.Text)
+				if PluginSettings:GetSetting("UseNativeScriptIDE") then
+					if not CurrentNativeIDELSCScriptDoc then return end
+					DataModelConnector:FireServer("RequestSourceRunOnServer", CurrentNativeIDELSCScriptDoc:GetText())
+				else
+					DataModelConnector:FireServer("RequestSourceRunOnServer", ExecutorFrameReferences.Editor.TextBox.Text)
+				end
             end
             return
         end)
@@ -402,13 +449,23 @@ return function(plugin: Plugin)
         ExecutorFrameReferences.RunClient.MouseButton1Click:Connect(function()
             if serv.RunService:IsServer() then
                 local DummyScript = Instance.new("LocalScript")
-                DummyScript.Source = ExecutorFrameReferences.Editor.TextBox.Text
+				if PluginSettings:GetSetting("UseNativeScriptIDE") then
+					if not CurrentNativeIDELSCScriptDoc then return end
+					DummyScript.Source = CurrentNativeIDELSCScriptDoc:GetText()
+				else
+					DummyScript.Source = ExecutorFrameReferences.Editor.TextBox.Text
+				end
 
                 local MS = CreateModuleScriptWrappedLSC(DummyScript, true)
                 MS.Parent = ModuleScriptCache
                 return DataModelConnector:FireAllClients({MS})
             else
-                DataModelConnector:FireServer("RequestSourceRunOnClient", ExecutorFrameReferences.Editor.TextBox.Text)
+				if PluginSettings:GetSetting("UseNativeScriptIDE") then
+					if not CurrentNativeIDELSCScriptDoc then return end
+					DataModelConnector:FireServer("RequestSourceRunOnServer", CurrentNativeIDELSCScriptDoc:GetText())
+				else
+					DataModelConnector:FireServer("RequestSourceRunOnServer", ExecutorFrameReferences.Editor.TextBox.Text)
+				end
             end
             return
         end)
@@ -417,6 +474,10 @@ return function(plugin: Plugin)
     --// Plugin unload hook
     plugin.Unloading:Connect(function()
         PluginSettings:Destroy(if serv.RunService:IsEdit() then false else true)
+        if CurrentNativeIDELSC then
+            CurrentNativeIDELSCScriptDoc = nil
+            AddToDebris(CurrentNativeIDELSC, 0)
+        end
     end)
 
     return true
