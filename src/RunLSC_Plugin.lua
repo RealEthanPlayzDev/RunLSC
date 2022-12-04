@@ -494,9 +494,9 @@ return function(plugin: Plugin)
             else
 				if PluginSettings:GetSetting("UseNativeScriptIDE") then
 					if not CurrentNativeIDELSCScriptDoc then return end
-					DataModelConnector:FireServer("RequestSourceRunOnServer", CurrentNativeIDELSCScriptDoc:GetText())
+					DataModelConnector:FireServer("RequestSourceRunOnClient", CurrentNativeIDELSCScriptDoc:GetText())
 				else
-					DataModelConnector:FireServer("RequestSourceRunOnServer", ExecutorReferences.Editor.TextBox.Text)
+					DataModelConnector:FireServer("RequestSourceRunOnClient", ExecutorReferences.Editor.TextBox.Text)
 				end
             end
             return
