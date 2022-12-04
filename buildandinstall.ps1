@@ -1,0 +1,1 @@
+rojo build .\default.project.json --output "$($env:LOCALAPPDATA)\Roblox\Plugins\RunLSC.rbxm"
