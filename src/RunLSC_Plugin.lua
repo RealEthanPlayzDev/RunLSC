@@ -133,8 +133,8 @@ return function(plugin: Plugin)
     local PluginSettings = SettingsManager.new(plugin)
 
     --// Warn about locked settings if it is locked
-    if PluginSettings.IsLocked then
-        warn("It seems like you have another Studio session running and this isn't the first session, saving plugin settings will be disabled.\nIf this is the first Studio session, you might have to manually release the lock via settings.")
+    if PluginSettings.IsLocked and PluginSettings:GetSetting("WarnAboutNotFirstStudioSession") then
+        warn("It seems like you have another Studio session running and this isn't the first session, saving plugin settings will be disabled.\nIf this is the first Studio session, you might have to manually release the lock via settings.\nTo disable this warning, go to settings and disable \"Warn about settings not saving\" to disable this warning.")
     end
 
     --// Toolbar creation
