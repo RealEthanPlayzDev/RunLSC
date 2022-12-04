@@ -132,6 +132,14 @@ return function(plugin: Plugin)
     --// SettingsManager
     local PluginSettings = SettingsManager.new(plugin)
 
+    if not PluginSettings:GetSetting("FinishedFirstTimeSetup") then
+        PluginSettings:SetSetting("UseFiOneAndYueliang", false)
+        PluginSettings:SetSetting("UseNativeScriptIDE", true)
+        PluginSettings:SetSetting("WarnAboutNotFirstStudioSession", true)
+        PluginSettings:SetSetting("FinishedFirstTimeSetup", true)
+        PluginSettings:Flush(true)
+    end
+
     --// Warn about locked settings if it is locked
     if PluginSettings.IsLocked and PluginSettings:GetSetting("WarnAboutNotFirstStudioSession") then
         warn("It seems like you have another Studio session running and this isn't the first session, saving plugin settings will be disabled.\nIf this is the first Studio session, you might have to manually release the lock via settings.\nTo disable this warning, go to settings and disable \"Warn about settings not saving\" to disable this warning.")
@@ -187,18 +195,24 @@ return function(plugin: Plugin)
                         if (not lsc:IsA("Script")) and (not lsc:IsA("LocalScript")) and (not lsc:IsA("ModuleScript")) then
                             continue
                         end
-                        --// task.spawn(CompileAndRun, lsc)
-                        local MS = CreateModuleScriptWrappedLSC(lsc)
-                        task.spawn(RunModuleScriptWrappedLSC, MS)
+                        if PluginSettings:GetSetting("UseFiOneAndYueliang") then
+                            task.spawn(CompileAndRun, lsc)
+                        else
+                            local MS = CreateModuleScriptWrappedLSC(lsc)
+                            task.spawn(RunModuleScriptWrappedLSC, MS)
+                        end
                     end
                     return
                 end,
                 ["RequestSourceRunOnServer"] = function(_, source: string)
                     local DummyScript = Instance.new("Script")
                     DummyScript.Source = source
-
-                    local MS = CreateModuleScriptWrappedLSC(DummyScript, true)
-                    task.spawn(RunModuleScriptWrappedLSC, MS)
+                    if PluginSettings:GetSetting("UseFiOneAndYueliang") then
+                        task.spawn(CompileAndRun, DummyScript)
+                    else
+                        local MS = CreateModuleScriptWrappedLSC(DummyScript, true)
+                        task.spawn(RunModuleScriptWrappedLSC, MS)
+                    end
                     return
                 end,
                 ["RequestSourceRunOnClient"] = function(plr: Player, source: string)
@@ -297,11 +311,14 @@ return function(plugin: Plugin)
     local SettingsBtn = Toolbar:CreateButton("Settings", "Open the RunLSC configuration window", "rbxassetid://10709810948")
     SettingsBtn.ClickableWhenViewportHidden = true
     local SettingsUI = UIManager.ConstructSettingsUI({
+        ["Execution"] = {
+            { SettingName = "UseFiOneAndYueliang", Text = "Use FiOne and Yueliang", FieldType = UIManager.FieldTypes.Boolean, CurrentValue = PluginSettings:GetSetting("UseFiOneAndYueliang") };
+        };
         ["Executor"] = {
-            { SettingName = "UseNativeScriptIDE", Text = "Use native script editor", FieldType = UIManager.FieldTypes.Boolean, DefaultValue = true };
+            { SettingName = "UseNativeScriptIDE", Text = "Use native script editor", FieldType = UIManager.FieldTypes.Boolean, CurrentValue = PluginSettings:GetSetting("UseNativeScriptIDE") };
         };
         ["Misc"] = {
-            { SettingName = "WarnAboutNotFirstStudioSession", Text = "Warn about settings not saving if this Studio session isn't the first", FieldType = UIManager.FieldTypes.Boolean, DefaultValue = true };
+            { SettingName = "WarnAboutNotFirstStudioSession", Text = "Warn about settings not saving if this Studio session isn't the first", FieldType = UIManager.FieldTypes.Boolean, CurrentValue = PluginSettings:GetSetting("WarnAboutNotFirstStudioSession") };
         };
     })
 

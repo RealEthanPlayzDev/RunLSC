@@ -29,7 +29,7 @@ function UIManager.new(class: string, ...)
     end
 end
 
-function UIManager.ConstructSettingsUI(settingdef: { [string]: { { SettingName: string, Text: string, FieldType: number, DefaultValue: any } } })
+function UIManager.ConstructSettingsUI(settingdef: { [string]: { { SettingName: string, Text: string, FieldType: number, CurrentValue: any } } })
     local SettingChanged = RESignal.new(RESignal.SignalBehavior.NewThread)
     local SSF = UIManager.new("StudioScrollingFrame")
     local UIThings = {SSF}
@@ -39,7 +39,7 @@ function UIManager.ConstructSettingsUI(settingdef: { [string]: { { SettingName: 
         table.insert(UIThings, Section)
         for _, setting in ipairs(settings) do
             if not FieldTypeClasses[setting.FieldType] then warn("No FieldType class for type "..setting.FieldType.." ("..setting.SettingName..")?"); continue end
-            local Field = UIManager.new(FieldTypeClasses[setting.FieldType], setting.Text, setting.DefaultValue)
+            local Field = UIManager.new(FieldTypeClasses[setting.FieldType], setting.Text, setting.CurrentValue)
             table.insert(UIThings, Field)
             Field.OnValueChanged:Connect(function(value)
                 return SettingChanged:Fire(setting.SettingName, value)
