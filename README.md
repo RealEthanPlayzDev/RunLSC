@@ -15,8 +15,8 @@ rojo build default.project.json --output RunLSC.rbxm
 - [x] Implement a way to load scripts and run them on the client natively (already found a way, just needs implementation)
 - [x] Ability to run a script on the server while being on the client context and the way around
 - [x] Settings manager
-- [ ] Settings widget
-- [ ] Built-in script executor for replacing command bar
+- [x] Settings widget
+- [x] Built-in script executor for replacing command bar
 
 ## Credits
 - [FiOne](https://github.com/Rerumu/FiOne) - Fall-back interpreter if Roblox's provided ``loadstring()`` is not available
