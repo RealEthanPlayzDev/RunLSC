@@ -318,55 +318,69 @@ return function(plugin: Plugin)
     end)
 
     --// Executor widget setup
-    local ExecutorWidget = plugin:CreateDockWidgetPluginGui("RunLSC - Executor", DockWidgetPluginGuiInfo.new(
+    local ExecutorEditorWidget = plugin:CreateDockWidgetPluginGui("RunLSC - Executor Editor", DockWidgetPluginGuiInfo.new(
         Enum.InitialDockState.Float,
         false,
         false,
         0,
         0,
-        250,
-        250
+        300,
+        200
     ))
-    ExecutorWidget.Name = "RunLSC_Executor"
-    ExecutorWidget.Title = "RunLSC - Executor"
+    ExecutorEditorWidget.Name = "RunLSC_ExecutorEditor"
+    ExecutorEditorWidget.Title = "RunLSC - Executor Editor"
+
+    local ExecutorActionsWidget = plugin:CreateDockWidgetPluginGui("RunLSC - Executor Actions", DockWidgetPluginGuiInfo.new(
+        Enum.InitialDockState.Float,
+        false,
+        false,
+        0,
+        0,
+        215,
+        35
+    ))
+    ExecutorActionsWidget.Name = "RunLSC_ExecutorActions"
+    ExecutorActionsWidget.Title = "RunLSC - Executor Actions"
 
     local CurrentNativeIDELSC
     local CurrentNativeIDELSCScriptDoc
-    local ExecutorFrameReferences do
-        local ExecutorFrame = UIManager.CreateExecutorUI()
-        ExecutorFrameReferences = {
-            Frame = ExecutorFrame;
-            Run = ExecutorFrame:FindFirstChild("Run") :: TextButton;
-            RunServer = ExecutorFrame:FindFirstChild("RunServer") :: TextButton;
-            RunClient = ExecutorFrame:FindFirstChild("RunClient") :: TextButton;
+    local ExecutorReferences do
+        local ExecutorEditor = UIManager.CreateExecutorEditor()
+        local ExecutorActions = UIManager.CreateExecutorActions()
+        ExecutorReferences = {
             Editor = {
-                Frame = ExecutorFrame:FindFirstChild("Editor") :: ScrollingFrame;
-                Lines = ExecutorFrame:FindFirstChild("Editor"):FindFirstChild("Lines") :: Frame;
-                TextBox = ExecutorFrame:FindFirstChild("Editor"):FindFirstChild("TextBox") :: TextBox;
-                LineCount = ExecutorFrame:FindFirstChild("Editor"):FindFirstChild("Lines"):FindFirstChild("1") :: TextLabel;
+                Frame = ExecutorEditor :: ScrollingFrame;
+                Lines = ExecutorEditor:FindFirstChild("Lines") :: Frame;
+                TextBox = ExecutorEditor:FindFirstChild("TextBox") :: TextBox;
+                LineCount = ExecutorEditor:FindFirstChild("Lines"):FindFirstChild("1") :: TextLabel;
             };
+            Actions = {
+                Frame = ExecutorActions :: Frame;
+                Run = ExecutorActions:FindFirstChild("Run") :: TextButton;
+                RunServer = ExecutorActions:FindFirstChild("RunServer") :: TextButton;
+                RunClient = ExecutorActions:FindFirstChild("RunClient") :: TextButton;
+            }
         }
-        ExecutorFrameReferences.Editor.LineCount.Parent = nil
     end
 
-    ExecutorFrameReferences.Editor.TextBox:GetPropertyChangedSignal("Text"):Connect(function()
-        local Text = ExecutorFrameReferences.Editor.TextBox.Text
+    ExecutorReferences.Editor.TextBox:GetPropertyChangedSignal("Text"):Connect(function()
+        local Text = ExecutorReferences.Editor.TextBox.Text
 
         --// Resize canvas automatically
-        local TextBounds = serv.TextService:GetTextSize(Text, ExecutorFrameReferences.Editor.TextBox.TextSize, Enum.Font.Code, Vector2.new(9999,9999))
-        ExecutorFrameReferences.Editor.Frame.CanvasSize = UDim2.new(0, TextBounds.X + 55, 0, TextBounds.Y + 5)
+        local TextBounds = serv.TextService:GetTextSize(Text, ExecutorReferences.Editor.TextBox.TextSize, Enum.Font.Code, Vector2.new(9999,9999))
+        ExecutorReferences.Editor.Frame.CanvasSize = UDim2.new(0, TextBounds.X + 55, 0, TextBounds.Y + 5)
 
         --// Line counter
         local TotalLines = #(string.split(Text, "\n"))
-        local CountedLines = ExecutorFrameReferences.Editor.Lines:GetChildren()
+        local CountedLines = ExecutorReferences.Editor.Lines:GetChildren()
         local TotalCountedLines = #CountedLines - 1 --// Theres a UIListLayout which is not a counted line instance
         if TotalCountedLines < TotalLines then
             for i = TotalCountedLines, TotalLines do
-                local Count = ExecutorFrameReferences.Editor.LineCount:Clone()
+                local Count = ExecutorReferences.Editor.LineCount:Clone()
                 Count.Name = i
                 Count.Text = i
                 Count.LayoutOrder = i
-                Count.Parent = ExecutorFrameReferences.Editor.Lines
+                Count.Parent = ExecutorReferences.Editor.Lines
             end
         else
             for i = TotalLines + 1, TotalCountedLines do
@@ -375,17 +389,18 @@ return function(plugin: Plugin)
         end
 
         --// Syntax highlighting
-        Highlighter.highlight({ textObject = ExecutorFrameReferences.Editor.TextBox, src = Text })
+        Highlighter.highlight({ textObject = ExecutorReferences.Editor.TextBox, src = Text })
     end)
 
-    ExecutorFrameReferences.Frame.Parent = ExecutorWidget
+    ExecutorReferences.Editor.Frame.Parent = ExecutorEditorWidget
 
     --// ScriptEditorService setup
 	serv.ScriptEditorService.TextDocumentDidClose:Connect(function(document)
         if not CurrentNativeIDELSCScriptDoc then return end
 		if document:GetScript() == CurrentNativeIDELSCScriptDoc:GetScript() then
 			CurrentNativeIDELSCScriptDoc = nil
-			ExecutorWidget.Enabled = false
+			ExecutorActionsWidget.Enabled = false
+            ExecutorEditorWidget.Enabled = false
 		end
 	end)
 
@@ -409,44 +424,45 @@ return function(plugin: Plugin)
             end
 
 			CurrentNativeIDELSCScriptDoc = serv.ScriptEditorService:FindScriptDocument(CurrentNativeIDELSC)
-			ExecutorWidget.Enabled = true
+			ExecutorActionsWidget.Enabled = true
 		else
-			ExecutorWidget.Enabled = not ExecutorWidget.Enabled
+			ExecutorEditorWidget.Enabled = not ExecutorEditorWidget.Enabled
+            ExecutorActionsWidget.Enabled = not ExecutorActionsWidget.Enabled
 		end
         return
     end)
 
     if serv.RunService:IsEdit() then
-        ExecutorFrameReferences.Run.MouseButton1Click:Connect(function()
+        ExecutorReferences.Actions.Run.MouseButton1Click:Connect(function()
             local DummyScript = Instance.new("Script")
             if PluginSettings:GetSetting("UseNativeScriptIDE") then
 				if not CurrentNativeIDELSCScriptDoc then return end
 				DummyScript.Source = CurrentNativeIDELSCScriptDoc:GetText()
 			else
-				DummyScript.Source = ExecutorFrameReferences.Editor.TextBox.Text
+				DummyScript.Source = ExecutorReferences.Editor.TextBox.Text
 			end
             task.spawn(CompileAndRun, DummyScript)
         end)
 
-        ExecutorFrameReferences.Run.Visible = true
-        ExecutorFrameReferences.RunClient.Visible = false
-        ExecutorFrameReferences.RunServer.Visible = false
+        ExecutorReferences.Actions.Run.Visible = true
+        ExecutorReferences.Actions.RunClient.Visible = false
+        ExecutorReferences.Actions.RunServer.Visible = false
     else
-        ExecutorFrameReferences.Run.Visible = false
-        ExecutorFrameReferences.RunClient.Visible = true
-        ExecutorFrameReferences.RunServer.Visible = true
+        ExecutorReferences.Actions.Run.Visible = false
+        ExecutorReferences.Actions.RunClient.Visible = true
+        ExecutorReferences.Actions.RunServer.Visible = true
 
         local DataModelConnector = SHARED_INTERNAL_FOLDER_LOCATION:WaitForChild(SHARED_INTERNAL_FOLDER_NAME):WaitForChild(SHARED_INTERNAL_FOLDER_CONNECTOR_NAME) :: RemoteEvent
         local ModuleScriptCache = SHARED_INTERNAL_FOLDER_LOCATION:WaitForChild(SHARED_INTERNAL_FOLDER_NAME):WaitForChild(SHARED_INTERNAL_FOLDER_MSCACHE_NAME) :: Folder
         
-        ExecutorFrameReferences.RunServer.MouseButton1Click:Connect(function()
+        ExecutorReferences.Actions.RunServer.MouseButton1Click:Connect(function()
             if serv.RunService:IsServer() then
                 local DummyScript = Instance.new("Script")
 				if PluginSettings:GetSetting("UseNativeScriptIDE") then
 					if not CurrentNativeIDELSCScriptDoc then return end
 					DummyScript.Source = CurrentNativeIDELSCScriptDoc:GetText()
 				else
-					DummyScript.Source = ExecutorFrameReferences.Editor.TextBox.Text
+					DummyScript.Source = ExecutorReferences.Editor.TextBox.Text
 				end
 
                 local MS = CreateModuleScriptWrappedLSC(DummyScript, true)
@@ -456,20 +472,20 @@ return function(plugin: Plugin)
 					if not CurrentNativeIDELSCScriptDoc then return end
 					DataModelConnector:FireServer("RequestSourceRunOnServer", CurrentNativeIDELSCScriptDoc:GetText())
 				else
-					DataModelConnector:FireServer("RequestSourceRunOnServer", ExecutorFrameReferences.Editor.TextBox.Text)
+					DataModelConnector:FireServer("RequestSourceRunOnServer", ExecutorReferences.Editor.TextBox.Text)
 				end
             end
             return
         end)
 
-        ExecutorFrameReferences.RunClient.MouseButton1Click:Connect(function()
+        ExecutorReferences.Actions.RunClient.MouseButton1Click:Connect(function()
             if serv.RunService:IsServer() then
                 local DummyScript = Instance.new("LocalScript")
 				if PluginSettings:GetSetting("UseNativeScriptIDE") then
 					if not CurrentNativeIDELSCScriptDoc then return end
 					DummyScript.Source = CurrentNativeIDELSCScriptDoc:GetText()
 				else
-					DummyScript.Source = ExecutorFrameReferences.Editor.TextBox.Text
+					DummyScript.Source = ExecutorReferences.Editor.TextBox.Text
 				end
 
                 local MS = CreateModuleScriptWrappedLSC(DummyScript, true)
@@ -480,17 +496,21 @@ return function(plugin: Plugin)
 					if not CurrentNativeIDELSCScriptDoc then return end
 					DataModelConnector:FireServer("RequestSourceRunOnServer", CurrentNativeIDELSCScriptDoc:GetText())
 				else
-					DataModelConnector:FireServer("RequestSourceRunOnServer", ExecutorFrameReferences.Editor.TextBox.Text)
+					DataModelConnector:FireServer("RequestSourceRunOnServer", ExecutorReferences.Editor.TextBox.Text)
 				end
             end
             return
         end)
     end
 
+    ExecutorReferences.Actions.Frame.Parent = ExecutorActionsWidget
+
     --// Plugin unload hook
     plugin.Unloading:Connect(function()
         PluginSettings:Destroy(if serv.RunService:IsEdit() then false else true)
         SettingsUI.Destroy()
+        AddToDebris(ExecutorReferences.Editor.Frame)
+        AddToDebris(ExecutorReferences.Actions.Frame)
         if CurrentNativeIDELSC then
             CurrentNativeIDELSCScriptDoc = nil
             AddToDebris(CurrentNativeIDELSC, 0)

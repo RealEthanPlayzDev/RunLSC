@@ -62,156 +62,152 @@ function UIManager.ConstructSettingsUI(settingdef: { [string]: { { SettingName: 
     }
 end
 
-function UIManager.CreateExecutorUI()
-    --// Last generated with Codify 2.2.5
-    local frame = Instance.new("Frame")
-    frame.Name = "Frame"
-    frame.BackgroundColor3 = Color3.fromRGB(255, 255, 255)
-    frame.BackgroundTransparency = 1
-    frame.BorderSizePixel = 0
-    frame.Size = UDim2.fromScale(1, 1)
+function UIManager.CreateExecutorEditor()
+    local Editor = Instance.new("ScrollingFrame")
+    Editor.Name = "Editor"
+    Editor.BottomImage = "rbxasset://textures/ui/Scroll/scroll-middle.png"
+    Editor.CanvasSize = UDim2.new()
+    Editor.HorizontalScrollBarInset = Enum.ScrollBarInset.ScrollBar
+    Editor.ScrollBarImageColor3 = Color3.fromRGB(56, 56, 56)
+    Editor.TopImage = "rbxasset://textures/ui/Scroll/scroll-middle.png"
+    Editor.VerticalScrollBarInset = Enum.ScrollBarInset.ScrollBar
+    Editor.BackgroundColor3 = Color3.fromRGB(37, 37, 37)
+    Editor.BorderSizePixel = 0
+    Editor.Selectable = false
+    Editor.Size = UDim2.new(1, 0, 1, 0)
+    Editor.SelectionGroup = false
 
-    local editor = Instance.new("ScrollingFrame")
-    editor.Name = "Editor"
-    editor.BottomImage = "rbxasset://textures/ui/Scroll/scroll-middle.png"
-    editor.CanvasSize = UDim2.new()
-    editor.HorizontalScrollBarInset = Enum.ScrollBarInset.ScrollBar
-    editor.ScrollBarImageColor3 = Color3.fromRGB(56, 56, 56)
-    editor.TopImage = "rbxasset://textures/ui/Scroll/scroll-middle.png"
-    editor.VerticalScrollBarInset = Enum.ScrollBarInset.ScrollBar
-    editor.BackgroundColor3 = Color3.fromRGB(37, 37, 37)
-    editor.BorderSizePixel = 0
-    editor.Selectable = false
-    editor.Size = UDim2.new(1, 0, 1, -35)
-    editor.SelectionGroup = false
+    local Lines = Instance.new("Frame")
+    Lines.Name = "Lines"
+    Lines.BackgroundColor3 = Color3.fromRGB(43, 43, 43)
+    Lines.BorderSizePixel = 0
+    Lines.Size = UDim2.new(0, 35, 1, 0)
 
-    local lines = Instance.new("Frame")
-    lines.Name = "Lines"
-    lines.BackgroundColor3 = Color3.fromRGB(43, 43, 43)
-    lines.BorderSizePixel = 0
-    lines.Size = UDim2.new(0, 35, 1, 0)
+    local LinesUILL = Instance.new("UIListLayout")
+    LinesUILL.Name = "UIListLayout"
+    LinesUILL.HorizontalAlignment = Enum.HorizontalAlignment.Center
+    LinesUILL.SortOrder = Enum.SortOrder.LayoutOrder
+    LinesUILL.Parent = Lines
 
-    local uIListLayout = Instance.new("UIListLayout")
-    uIListLayout.Name = "UIListLayout"
-    uIListLayout.HorizontalAlignment = Enum.HorizontalAlignment.Center
-    uIListLayout.SortOrder = Enum.SortOrder.LayoutOrder
-    uIListLayout.Parent = lines
+    local LineMarker = Instance.new("TextButton")
+    LineMarker.Name = "1"
+    LineMarker.FontFace = Font.fromEnum(Enum.Font.Code)
+    LineMarker.Text = "1"
+    LineMarker.TextColor3 = Color3.fromRGB(204, 204, 204)
+    LineMarker.TextSize = 15
+    LineMarker.Active = false
+    LineMarker.BackgroundColor3 = Color3.fromRGB(255, 255, 255)
+    LineMarker.BackgroundTransparency = 1
+    LineMarker.Selectable = false
+    LineMarker.Size = UDim2.new(1, 0, 0, 25)
+    LineMarker.Parent = Lines
 
-    local w = Instance.new("TextButton")
-    w.Name = "1"
-    w.FontFace = Font.fromEnum(Enum.Font.Code)
-    w.Text = "1"
-    w.TextColor3 = Color3.fromRGB(204, 204, 204)
-    w.TextSize = 15
-    w.Active = false
-    w.BackgroundColor3 = Color3.fromRGB(255, 255, 255)
-    w.BackgroundTransparency = 1
-    w.Selectable = false
-    w.Size = UDim2.new(1, 0, 0, 20)
-    w.Parent = lines
+    Lines.Parent = Editor
 
-    lines.Parent = editor
+    local TextBox = Instance.new("TextBox")
+    TextBox.Name = "TextBox"
+    TextBox.ClearTextOnFocus = false
+    TextBox.FontFace = Font.fromEnum(Enum.Font.Code)
+    TextBox.PlaceholderColor3 = Color3.fromRGB(178, 178, 178)
+    TextBox.Text = ""
+    TextBox.TextColor3 = Color3.fromRGB(255, 255, 255)
+    TextBox.TextSize = 18
+    TextBox.TextXAlignment = Enum.TextXAlignment.Left
+    TextBox.TextYAlignment = Enum.TextYAlignment.Top
+    TextBox.BackgroundColor3 = Color3.fromRGB(255, 255, 255)
+    TextBox.BackgroundTransparency = 1
+    TextBox.BorderSizePixel = 0
+    TextBox.Position = UDim2.fromOffset(55, 5)
+    TextBox.Size = UDim2.new(1, -55, 1, -5)
+    TextBox.MultiLine = true
+    TextBox.Parent = Editor
 
-    local textBox = Instance.new("TextBox")
-    textBox.Name = "TextBox"
-    textBox.ClearTextOnFocus = false
-    textBox.FontFace = Font.fromEnum(Enum.Font.Code)
-    textBox.PlaceholderColor3 = Color3.fromRGB(178, 178, 178)
-    textBox.Text = ""
-    textBox.TextColor3 = Color3.fromRGB(255, 255, 255)
-    textBox.TextSize = 18
-    textBox.TextXAlignment = Enum.TextXAlignment.Left
-    textBox.TextYAlignment = Enum.TextYAlignment.Top
-    textBox.BackgroundColor3 = Color3.fromRGB(255, 255, 255)
-    textBox.BackgroundTransparency = 1
-    textBox.BorderSizePixel = 0
-    textBox.Position = UDim2.fromOffset(55, 5)
-    textBox.Size = UDim2.new(1, -55, 1, -5)
-    textBox.MultiLine = true
-    textBox.Parent = editor
+    local Collapsibles = Instance.new("Frame")
+    Collapsibles.Name = "Collapsibles"
+    Collapsibles.BackgroundColor3 = Color3.fromRGB(48, 48, 48)
+    Collapsibles.BorderSizePixel = 0
+    Collapsibles.Position = UDim2.fromOffset(35, 0)
+    Collapsibles.Size = UDim2.new(0, 15, 1, 0)
+    Collapsibles.Parent = Editor
 
-    local collapsibles = Instance.new("Frame")
-    collapsibles.Name = "Collapsibles"
-    collapsibles.BackgroundColor3 = Color3.fromRGB(48, 48, 48)
-    collapsibles.BorderSizePixel = 0
-    collapsibles.Position = UDim2.fromOffset(35, 0)
-    collapsibles.Size = UDim2.new(0, 15, 1, 0)
-    collapsibles.Parent = editor
+    return Editor
+end
 
-    editor.Parent = frame
+function UIManager.CreateExecutorActions()
+    local ActionsFrame = Instance.new("Frame")
+    ActionsFrame.Name = "ActionsFrame"
+    ActionsFrame.Size = UDim2.new(1, 0, 1, 0)
+    ActionsFrame.BackgroundTransparency = 1
 
-    local run = Instance.new("TextButton")
-    run.Name = "Run"
-    run.FontFace = Font.fromEnum(Enum.Font.Arial)
-    run.Text = "Run"
-    run.TextColor3 = Color3.fromRGB(0, 0, 0)
-    run.TextSize = 14
-    run.AnchorPoint = Vector2.new(1, 1)
-    run.BackgroundColor3 = Color3.fromRGB(43, 177, 255)
-    run.Position = UDim2.new(1, -5, 1, -5)
-    run.Size = UDim2.fromOffset(100, 25)
+    local Run = Instance.new("TextButton")
+    Run.Name = "Run"
+    Run.FontFace = Font.fromEnum(Enum.Font.Arial)
+    Run.Text = "Run"
+    Run.TextColor3 = Color3.fromRGB(0, 0, 0)
+    Run.TextSize = 14
+    Run.BackgroundColor3 = Color3.fromRGB(43, 177, 255)
+    Run.Position = UDim2.fromOffset(5, 5)
+    Run.Size = UDim2.fromOffset(100, 25)
 
-    local uICorner = Instance.new("UICorner")
-    uICorner.Name = "UICorner"
-    uICorner.CornerRadius = UDim.new(0, 4)
-    uICorner.Parent = run
+    local RunUIC = Instance.new("UICorner")
+    RunUIC.Name = "UICorner"
+    RunUIC.CornerRadius = UDim.new(0, 4)
+    RunUIC.Parent = Run
 
-    local uIStroke = Instance.new("UIStroke")
-    uIStroke.Name = "UIStroke"
-    uIStroke.ApplyStrokeMode = Enum.ApplyStrokeMode.Border
-    uIStroke.Parent = run
+    local RunUIS = Instance.new("UIStroke")
+    RunUIS.Name = "UIStroke"
+    RunUIS.ApplyStrokeMode = Enum.ApplyStrokeMode.Border
+    RunUIS.Parent = Run
 
-    run.Parent = frame
+    Run.Parent = ActionsFrame
 
-    local runServer = Instance.new("TextButton")
-    runServer.Name = "RunServer"
-    runServer.FontFace = Font.fromEnum(Enum.Font.Arial)
-    runServer.Text = "Run (server)"
-    runServer.TextColor3 = Color3.fromRGB(0, 0, 0)
-    runServer.TextSize = 14
-    runServer.AnchorPoint = Vector2.new(1, 1)
-    runServer.BackgroundColor3 = Color3.fromRGB(0, 255, 127)
-    runServer.Position = UDim2.new(1, -5, 1, -5)
-    runServer.Size = UDim2.fromOffset(100, 25)
-    runServer.Visible = false
+    local RunServer = Instance.new("TextButton")
+    RunServer.Name = "RunServer"
+    RunServer.FontFace = Font.fromEnum(Enum.Font.Arial)
+    RunServer.Text = "Run (server)"
+    RunServer.TextColor3 = Color3.fromRGB(0, 0, 0)
+    RunServer.TextSize = 14
+    RunServer.BackgroundColor3 = Color3.fromRGB(0, 255, 127)
+    RunServer.Position = UDim2.fromOffset(5, 5)
+    RunServer.Size = UDim2.fromOffset(100, 25)
+    RunServer.Visible = false
 
-    local uICorner1 = Instance.new("UICorner")
-    uICorner1.Name = "UICorner"
-    uICorner1.CornerRadius = UDim.new(0, 4)
-    uICorner1.Parent = runServer
+    local RunServerUIC = Instance.new("UICorner")
+    RunServerUIC.Name = "UICorner"
+    RunServerUIC.CornerRadius = UDim.new(0, 4)
+    RunServerUIC.Parent = RunServer
 
-    local uIStroke1 = Instance.new("UIStroke")
-    uIStroke1.Name = "UIStroke"
-    uIStroke1.ApplyStrokeMode = Enum.ApplyStrokeMode.Border
-    uIStroke1.Parent = runServer
+    local RunServerUIS = Instance.new("UIStroke")
+    RunServerUIS.Name = "UIStroke"
+    RunServerUIS.ApplyStrokeMode = Enum.ApplyStrokeMode.Border
+    RunServerUIS.Parent = RunServer
 
-    runServer.Parent = frame
+    RunServer.Parent = ActionsFrame
 
-    local runClient = Instance.new("TextButton")
-    runClient.Name = "RunClient"
-    runClient.FontFace = Font.fromEnum(Enum.Font.Arial)
-    runClient.Text = "Run (client)"
-    runClient.TextColor3 = Color3.fromRGB(0, 0, 0)
-    runClient.TextSize = 14
-    runClient.AnchorPoint = Vector2.new(1, 1)
-    runClient.BackgroundColor3 = Color3.fromRGB(43, 177, 255)
-    runClient.Position = UDim2.new(1, -110, 1, -5)
-    runClient.Size = UDim2.fromOffset(100, 25)
-    runClient.Visible = false
+    local RunClient = Instance.new("TextButton")
+    RunClient.Name = "RunClient"
+    RunClient.FontFace = Font.fromEnum(Enum.Font.Arial)
+    RunClient.Text = "Run (client)"
+    RunClient.TextColor3 = Color3.fromRGB(0, 0, 0)
+    RunClient.TextSize = 14
+    RunClient.BackgroundColor3 = Color3.fromRGB(43, 177, 255)
+    RunClient.Position = UDim2.fromOffset(110, 5)
+    RunClient.Size = UDim2.fromOffset(100, 25)
+    RunClient.Visible = false
 
-    local uICorner2 = Instance.new("UICorner")
-    uICorner2.Name = "UICorner"
-    uICorner2.CornerRadius = UDim.new(0, 4)
-    uICorner2.Parent = runClient
+    local RunClientUIC = Instance.new("UICorner")
+    RunClientUIC.Name = "UICorner"
+    RunClientUIC.CornerRadius = UDim.new(0, 4)
+    RunClientUIC.Parent = RunClient
 
-    local uIStroke2 = Instance.new("UIStroke")
-    uIStroke2.Name = "UIStroke"
-    uIStroke2.ApplyStrokeMode = Enum.ApplyStrokeMode.Border
-    uIStroke2.Parent = runClient
+    local RunClientUIS = Instance.new("UIStroke")
+    RunClientUIS.Name = "UIStroke"
+    RunClientUIS.ApplyStrokeMode = Enum.ApplyStrokeMode.Border
+    RunClientUIS.Parent = RunClient
 
-    runClient.Parent = frame
+    RunClient.Parent = ActionsFrame
 
-    return frame
+    return ActionsFrame
 end
 
 return UIManager
