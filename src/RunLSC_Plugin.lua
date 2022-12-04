@@ -27,7 +27,7 @@ local serv = {
 --// Libraries
 local loadstring = require(script.Parent.lib.LoadstringHelper)
 local SettingsManager = require(script.Parent.lib.SettingsManager)
-local UIHelper = require(script.Parent.lib.UIHelper)
+local UIManager = require(script.Parent.lib.UIManager)
 local Highlighter = require(script.Parent.lib.Highlighter)
 
 --// Replace stdout functions with a wrapped one (except error)
@@ -296,9 +296,25 @@ return function(plugin: Plugin)
     --// Settings button setup
     local SettingsBtn = Toolbar:CreateButton("Settings", "Open the RunLSC configuration window", "rbxassetid://10709810948")
     SettingsBtn.ClickableWhenViewportHidden = true
+    local SettingsUI = UIManager.ConstructSettingsUI({
+        ["Executor"] = {
+            { SettingName = "UseNativeScriptIDE", Text = "Use native script editor", FieldType = UIManager.FieldTypes.Boolean, DefaultValue = true };
+        };
+        ["Misc"] = {
+            { SettingName = "WarnAboutNotFirstStudioSession", Text = "Warn about settings not saving if this Studio session isn't the first", FieldType = UIManager.FieldTypes.Boolean, DefaultValue = true };
+        };
+    })
+
+    SettingsUI.SettingChanged:Connect(function(name, value)
+        PluginSettings:SetSetting(name, value)
+        return PluginSettings:Flush(true)
+    end)
+
+    SettingsUI.ScrollingFrame.Instance.Parent = SettingsWidget
+
     SettingsBtn.Click:Connect(function()
         SettingsWidget.Enabled = not SettingsWidget.Enabled
-        return warn("Settings widget not implemented yet")
+        return
     end)
 
     --// Executor widget setup
@@ -317,7 +333,7 @@ return function(plugin: Plugin)
     local CurrentNativeIDELSC
     local CurrentNativeIDELSCScriptDoc
     local ExecutorFrameReferences do
-        local ExecutorFrame = UIHelper.CreateExecutorUI()
+        local ExecutorFrame = UIManager.CreateExecutorUI()
         ExecutorFrameReferences = {
             Frame = ExecutorFrame;
             Run = ExecutorFrame:FindFirstChild("Run") :: TextButton;
@@ -474,6 +490,7 @@ return function(plugin: Plugin)
     --// Plugin unload hook
     plugin.Unloading:Connect(function()
         PluginSettings:Destroy(if serv.RunService:IsEdit() then false else true)
+        SettingsUI.Destroy()
         if CurrentNativeIDELSC then
             CurrentNativeIDELSCScriptDoc = nil
             AddToDebris(CurrentNativeIDELSC, 0)

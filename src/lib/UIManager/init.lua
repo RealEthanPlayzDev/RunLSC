@@ -1,14 +1,68 @@
 --[[
-File name: UIHelper.lua
+File name: UIManager.lua
 Author: RadiatedExodus (ItzEthanPlayz_YT/RealEthanPlayzDev)
-Created at: Noevember 10, 2022
+Created at: December 4, 2022
 
 Static class containing UI helper functions for RunLSC.
 --]]
 
-local UIHelper = {}
+--// Libraries
+local RESignal = require(script.Parent.RESignal)
 
-function UIHelper.CreateExecutorUI()
+local UIManager = {}
+
+local FieldTypes = {
+    Boolean = 0x1;
+}
+
+local FieldTypeClasses = {
+    [FieldTypes.Boolean] = "BooleanField";
+}
+
+UIManager.FieldTypes = FieldTypes
+
+function UIManager.new(class: string, ...)
+    if script:FindFirstChild(class) then
+        return require(script:FindFirstChild(class)).new(...)
+    else
+        return Instance.new(class :: "Frame")
+    end
+end
+
+function UIManager.ConstructSettingsUI(settingdef: { [string]: { { SettingName: string, Text: string, FieldType: number, DefaultValue: any } } })
+    local SettingChanged = RESignal.new(RESignal.SignalBehavior.NewThread)
+    local SSF = UIManager.new("StudioScrollingFrame")
+    local UIThings = {SSF}
+
+    for section, settings in pairs(settingdef) do
+        local Section = UIManager.new("Section", section, true)
+        table.insert(UIThings, Section)
+        for _, setting in ipairs(settings) do
+            if not FieldTypeClasses[setting.FieldType] then warn("No FieldType class for type "..setting.FieldType.." ("..setting.SettingName..")?"); continue end
+            local Field = UIManager.new(FieldTypeClasses[setting.FieldType], setting.Text, setting.DefaultValue)
+            table.insert(UIThings, Field)
+            Field.OnValueChanged:Connect(function(value)
+                return SettingChanged:Fire(setting.SettingName, value)
+            end)
+            Field.Instance.Parent = Section:GetContentFrame()
+        end
+        Section.Instance.Parent = SSF:GetContentFrame()
+    end
+
+    return {
+        ScrollingFrame = SSF;
+        SettingChanged = SettingChanged;
+        UIs = UIThings;
+        Destroy = function()
+            SettingChanged:Destroy()
+            for _, ui in ipairs(UIThings) do
+                ui:Destroy()
+            end
+        end;
+    }
+end
+
+function UIManager.CreateExecutorUI()
     --// Last generated with Codify 2.2.5
     local frame = Instance.new("Frame")
     frame.Name = "Frame"
@@ -160,4 +214,4 @@ function UIHelper.CreateExecutorUI()
     return frame
 end
 
-return UIHelper
+return UIManager
